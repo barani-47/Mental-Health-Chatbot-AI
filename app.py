@@ -1,57 +1,59 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import os
 from google import genai
+from google.genai import types
 
-# 1. Setup API
-# Replace 'YOUR_API_KEY_HERE' with your actual key
-client = genai.Client(api_key='Gemini API KEY')
+# 1. Setup API (Securely fetching the key)
+if "gemini_client" not in st.session_state:
+    st.session_state.gemini_client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
-# 2. Build or Load the ML Brain (Classification)
+client = st.session_state.gemini_client
+
+# 2. Load the Deep Learning Brain
 @st.cache_resource
 def get_ml_brain():
-    model = joblib.load('mental_health_model.pkl')
+    model = joblib.load('mental_health_dl_model.pkl')
     vectorizer = joblib.load('text_vectorizer.pkl')
     return model, vectorizer
 
 model, vectorizer = get_ml_brain()
 
-# 3. Web Page UI
+# 3. Web Page UI Setup
 st.set_page_config(page_title="Mental Health Agentic AI", page_icon="🧠")
 st.title("🧠 Agentic Mental Health Companion")
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# --- THE MEMORY BACKPACK ---
+# If this is a brand new conversation, create the "phone call" and save it.
+if "chat_session" not in st.session_state:
+    st.session_state.chat_session = client.chats.create(
+        model="gemini-2.5-flash",
+        config=types.GenerateContentConfig(
+            system_instruction="You are a supportive, empathetic mental health companion. Always suggest one small, healthy coping strategy. Keep it concise."
+        )
+    )
+    # We also need to keep track of the text to draw it on the screen
+    st.session_state.ui_messages = []
 
 # 4. Handle Input & Generate Response
 if prompt := st.chat_input("I'm here to listen..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    # Save and show user message on screen
+    st.session_state.ui_messages.append({"role": "user", "content": prompt})
     
-    # Classify Emotion
+    # Classify Emotion using your Neural Network
     prediction = model.predict(vectorizer.transform([prompt]))[0]
     
-    # Generate Empathetic Response
-    agent_prompt = f"""
-    You are a supportive, empathetic mental health companion. 
-    The user is expressing feelings related to: {prediction}.
-    Provide a compassionate, safe, and helpful response, 
-    and suggest one small, healthy coping strategy. 
-    Keep it concise.
-    User input: {prompt}
-    """
+    # We secretly whisper the emotion to the AI before passing the user's message!
+    agent_prompt = f"[System Note: The user's underlying emotion is classified as '{prediction}']\nUser says: {prompt}"
     
+    # Send the message into the continuous "phone call" (Memory)
     with st.spinner("Thinking..."):
-        # This uses the new recommended model 'gemini-2.5-flash'
-        # If this fails, change to 'gemini-2.0-flash'
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=agent_prompt,
-        )
+        response = st.session_state.chat_session.send_message(agent_prompt)
 
-    st.session_state.messages.append({"role": "assistant", "content": response.text})
+    # Save the AI's response on screen
+    st.session_state.ui_messages.append({"role": "assistant", "content": response.text})
 
-# Display Chat
-for message in st.session_state.messages:
+# 5. Display the Chat History on the screen
+for message in st.session_state.ui_messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
