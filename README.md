@@ -1,7 +1,7 @@
 🧠 Agentic AI Mental Health Companion
 
 ## 📌 Overview
-This project is an advanced, personalized mental health support chatbot designed to provide empathetic, context-aware conversations. Moving beyond basic conversational bots, this system employs an "Agentic AI" architecture. It first uses a Machine Learning classification model to detect the user's emotional state, and then utilizes Google's Generative AI (Gemini) to dynamically craft supportive, clinically informed responses and coping strategies.
+This project is an advanced, personalized mental health support chatbot designed to provide empathetic, context-aware conversations. Moving beyond basic conversational bots, this system employs an "Agentic AI" architecture. It first uses a Machine Learning classification model to detect the user's emotional state. Then it uses Google's Generative AI (Gemini) to craft supportive, clinically informed responses and coping strategies dynamically.
 
 ## 🚀 Tech Stack
 * **Language:** Python 3
@@ -24,6 +24,8 @@ This project is an advanced, personalized mental health support chatbot designed
 2. Install dependencies: `pip install streamlit pandas scikit-learn google-genai joblib`
 3. Add your Gemini API key to Streamlit secrets.
 4. Run the app: `python -m streamlit run app.py`
+
+You can start the app: https://mental-health-chatbot-ai.streamlit.app/
 
 ## 👨‍💻 Developer
 **Baranidharan T S**
