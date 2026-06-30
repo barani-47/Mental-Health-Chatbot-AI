@@ -6,7 +6,7 @@ from google import genai
 
 # 1. Setup API
 # Replace 'YOUR_API_KEY_HERE' with your actual key
-client = genai.Client(api_key='AQ.Ab8RN6LXUKfSbym3EFY7rAAHbF0vpWMcoAiiIq9TS5Z4I6wmmQ')
+client = genai.Client(api_key='Gemini API KEY')
 
 # 2. Build or Load the ML Brain (Classification)
 @st.cache_resource
